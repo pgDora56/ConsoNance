@@ -106,7 +106,13 @@ make build-mac
 
 ## Configuration
 
-Create a `config.yaml` file in the same directory as the executable:
+Copy `config.yaml.example` to `config.yaml` and edit it with your values:
+
+```bash
+cp config.yaml.example config.yaml
+```
+
+Then edit `config.yaml` with your actual configuration:
 
 ```yaml
 discord_token: "YOUR_BOT_TOKEN_HERE"
@@ -200,3 +206,18 @@ Shows available commands.
 - Make sure your Discord bot has the necessary permissions to join voice channels
 - Required bot permissions: `Connect`, `Speak`, `Read Messages`, `Send Messages`
 - The bot uses loopback audio capture to stream system audio
+
+## License
+
+This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.
+
+### What does GPL v3.0 mean?
+
+- ✅ You can use this software freely
+- ✅ You can modify the source code
+- ✅ You can distribute modified versions
+- ⚠️ Any derivative work must also be licensed under GPL v3.0
+- ⚠️ You must disclose the source code of derivative works
+- ⚠️ You must include the original copyright and license notices
+
+Copyright (C) 2025 Kazuki F.

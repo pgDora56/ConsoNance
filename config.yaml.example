@@ -1,0 +1,27 @@
+# ConsoNance Configuration File
+# Copy this file to config.yaml and fill in your actual values
+
+# Discord Bot Token (required)
+# Get your token from https://discord.com/developers/applications
+discord_token: "YOUR_DISCORD_BOT_TOKEN_HERE"
+
+# Guild (Server) ID (required)
+# Enable Developer Mode in Discord, right-click your server, Copy Server ID
+guild_id: "YOUR_GUILD_ID_HERE"
+
+# Channel ID (optional)
+# If specified, the bot will automatically join this voice channel on startup
+# Right-click a voice channel, Copy Channel ID
+channel_id: ""
+
+# Audio Device Configuration (optional)
+# Specify the name of the audio device to use for loopback capture
+# Leave empty to use the default loopback device
+# To list available devices, set list_devices to true and run the bot
+audio_device_name: ""
+
+# List Devices Mode (optional)
+# Set to true to list all available audio devices and exit
+# This helps you find the correct device name for audio_device_name
+list_devices: false
+
