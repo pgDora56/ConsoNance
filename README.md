@@ -104,8 +104,99 @@ Or using Makefile:
 make build-mac
 ```
 
+## Configuration
+
+Create a `config.yaml` file in the same directory as the executable:
+
+```yaml
+discord_token: "YOUR_BOT_TOKEN_HERE"
+channel_id: "1234567890"  # Optional: Auto-join this channel on startup
+guild_id: "0987654321"    # Your Discord server (guild) ID
+audio_device_name: "Your Audio Device Name"  # Optional: Specify audio device
+list_devices: false       # Set to true to list available audio devices
+```
+
+### Getting Your Discord Bot Token
+
+1. Go to [Discord Developer Portal](https://discord.com/developers/applications)
+2. Create a new application or select an existing one
+3. Navigate to the "Bot" section
+4. Click "Reset Token" and copy your bot token
+5. Paste it into `config.yaml` as `discord_token`
+
+### Finding Guild and Channel IDs
+
+1. Enable Developer Mode in Discord: Settings > Advanced > Developer Mode
+2. Right-click on your server icon → Copy Server ID (this is your `guild_id`)
+3. Right-click on a voice channel → Copy Channel ID (this is your `channel_id`)
+
+### Audio Device Configuration
+
+To list available audio devices:
+
+```yaml
+list_devices: true
+```
+
+Then run the bot to see available devices. Copy the device name you want to use and set it in `audio_device_name`.
+
 ## Usage
 
+### Starting the Bot
+
 ```bash
-./consonance  # or consonance-win.exe on Windows
+./consonance  # or consonance.exe on Windows
 ```
+
+The bot will start and connect to Discord. If `channel_id` is specified in `config.yaml`, it will automatically join that voice channel.
+
+### Discord Commands
+
+You can control the bot by mentioning it in any text channel on your Discord server:
+
+#### Join a Voice Channel
+
+```
+@YourBot join #channel-name
+```
+
+Or search by channel name (without `#`):
+
+```
+@YourBot join channel-name
+```
+
+#### Leave Voice Channel
+
+```
+@YourBot leave
+```
+
+#### Check Status
+
+```
+@YourBot status
+```
+
+Shows current connection status and streaming information.
+
+#### Help
+
+```
+@YourBot help
+```
+
+Shows available commands.
+
+### How It Works
+
+- The bot captures system audio (loopback) from your computer
+- It encodes the audio to Opus format
+- The audio is streamed to the Discord voice channel in real-time
+- You can switch channels on-the-fly using Discord commands without restarting the bot
+
+## Notes
+
+- Make sure your Discord bot has the necessary permissions to join voice channels
+- Required bot permissions: `Connect`, `Speak`, `Read Messages`, `Send Messages`
+- The bot uses loopback audio capture to stream system audio
