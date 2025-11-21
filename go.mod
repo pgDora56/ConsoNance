@@ -4,6 +4,7 @@ go 1.25.1
 
 require (
 	github.com/bwmarrin/discordgo v0.29.0
+	github.com/gen2brain/malgo v0.11.24
 	gopkg.in/yaml.v3 v3.0.1
 	layeh.com/gopus v0.0.0-20210501142526-1ee02d434e32
 )
