@@ -1,4 +1,4 @@
-.PHONY: build run clean deps list-devices
+.PHONY: build run clean deps list-devices build-win build-windows build-linux build-mac
 
 # Binary name
 BINARY_NAME=consonance
@@ -11,7 +11,12 @@ build:
 run: build
 	./$(BINARY_NAME)
 
-# Build for Windows
+# Build for Windows (run in PowerShell)
+# Direct command: $env:PATH += ";C:\msys64\mingw64\bin"; $env:CGO_ENABLED=1; go build -o consonance-win.exe
+build-win:
+	powershell -Command "$$env:PATH += ';C:\msys64\mingw64\bin'; $$env:CGO_ENABLED=1; go build -o consonance-win.exe"
+
+# Build for Windows (cross-compile)
 build-windows:
 	GOOS=windows GOARCH=amd64 go build -o $(BINARY_NAME)-windows-amd64.exe main.go
 

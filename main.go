@@ -17,11 +17,15 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"math"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"strconv"
 	"strings"
 	"sync"
 	"syscall"
@@ -56,35 +60,92 @@ type Config struct {
 	ChannelID       string `yaml:"channel_id"`
 	GuildID         string `yaml:"guild_id"`
 	AudioDeviceName string `yaml:"audio_device_name"`
-	ListDevices     bool   `yaml:"list_devices"`
+}
+
+// setupLogFile creates a log file and configures logging to both file and console
+func setupLogFile() (*os.File, error) {
+	// logsディレクトリを作成
+	logsDir := "logs"
+	if err := os.MkdirAll(logsDir, 0755); err != nil {
+		return nil, fmt.Errorf("failed to create logs directory: %w", err)
+	}
+
+	// タイムスタンプ付きのログファイル名を生成
+	timestamp := time.Now().Format("20060102_150405")
+	logFileName := filepath.Join(logsDir, fmt.Sprintf("consonance_%s.log", timestamp))
+
+	// ログファイルを作成
+	logFile, err := os.OpenFile(logFileName, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create log file: %w", err)
+	}
+
+	// コンソールとファイルの両方に出力するように設定
+	multiWriter := io.MultiWriter(os.Stdout, logFile)
+	log.SetOutput(multiWriter)
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+
+	return logFile, nil
 }
 
 func main() {
-	// config.yamlの読み込み
-	configFile, err := os.Open("config.yaml")
+	// ログファイルのセットアップ
+	logFile, err := setupLogFile()
 	if err != nil {
-		log.Fatalf("Failed to open config.yaml: %v", err)
-	}
-	defer configFile.Close()
-
-	config = &Config{}
-	decoder := yaml.NewDecoder(configFile)
-	if err := decoder.Decode(config); err != nil {
-		log.Fatalf("Failed to parse config.yaml: %v", err)
+		log.Printf("Warning: Failed to setup log file: %v (continuing with console only)", err)
+	} else {
+		defer logFile.Close()
+		log.Println("Log file created successfully")
 	}
 
-	// デバイス一覧表示モード
-	if config.ListDevices {
-		if err := listAudioDevices(); err != nil {
-			log.Fatalf("Failed to list audio devices: %v", err)
+	// panicをキャッチしてログに記録
+	defer func() {
+		if r := recover(); r != nil {
+			log.Printf("PANIC: %v", r)
+			log.Println("Application terminated abnormally")
 		}
-		return
+	}()
+
+	// config.yamlの読み込み（存在しない場合は作成）
+	config, err = loadOrCreateConfig()
+	if err != nil {
+		log.Fatalf("Failed to load config: %v", err)
+	}
+
+	// トークンの検証と対話的入力
+	if config.DiscordToken == "" {
+		token, err := promptForDiscordToken()
+		if err != nil {
+			log.Fatalf("Failed to get Discord token: %v", err)
+		}
+		config.DiscordToken = token
+		log.Println("✓ Discord token saved to config.yaml")
+	}
+	// トークンの最初と最後の数文字だけ表示（セキュリティのため）
+	tokenPreview := config.DiscordToken
+	if len(tokenPreview) > 20 {
+		tokenPreview = tokenPreview[:10] + "..." + tokenPreview[len(tokenPreview)-10:]
+	}
+	log.Printf("Using Discord token: %s", tokenPreview)
+
+	// オーディオデバイスの選択
+	selectedDevice := config.AudioDeviceName
+	if selectedDevice == "" {
+		// 設定ファイルに指定がない場合は、対話的に選択
+		device, err := selectAudioDevice()
+		if err != nil {
+			log.Fatalf("Failed to select audio device: %v", err)
+		}
+		selectedDevice = device
+		log.Printf("Selected audio device: %s", selectedDevice)
+	} else {
+		log.Printf("Using audio device from config: %s", selectedDevice)
 	}
 
 	// BotStateの初期化
 	botState = &BotState{
 		guildID:         config.GuildID,
-		audioDeviceName: config.AudioDeviceName,
+		audioDeviceName: selectedDevice,
 		stopStreaming:   make(chan bool),
 	}
 
@@ -101,8 +162,22 @@ func main() {
 	session.AddHandler(messageCreate)
 
 	// Discordセッションのオープン
+	log.Println("Connecting to Discord...")
 	if err := session.Open(); err != nil {
-		log.Fatalf("Failed to open Discord session: %v", err)
+		log.Printf("Failed to open Discord session: %v", err)
+		log.Println("")
+		log.Println("=== Troubleshooting Authentication Error ===")
+		log.Println("If you see '4004: Authentication failed', check the following:")
+		log.Println("1. Verify your bot token is correct in config.yaml")
+		log.Println("2. Go to Discord Developer Portal (https://discord.com/developers/applications)")
+		log.Println("3. Select your application → Bot")
+		log.Println("4. Under 'Privileged Gateway Intents', enable:")
+		log.Println("   - MESSAGE CONTENT INTENT (required!)")
+		log.Println("   - SERVER MEMBERS INTENT")
+		log.Println("   - PRESENCE INTENT")
+		log.Println("5. Save changes and try again")
+		log.Println("6. If still failing, try resetting your bot token")
+		log.Fatalf("")
 	}
 	defer session.Close()
 
@@ -578,12 +653,12 @@ func streamSystemAudio(v *discordgo.VoiceConnection, deviceName string) error {
 	return nil
 }
 
-// listAudioDevices lists all available audio devices
-func listAudioDevices() error {
+// selectAudioDevice displays available audio devices and lets the user select one
+func selectAudioDevice() (string, error) {
 	// malgoコンテキストの初期化
 	ctx, err := malgo.InitContext(nil, malgo.ContextConfig{}, nil)
 	if err != nil {
-		return fmt.Errorf("failed to initialize malgo context: %v", err)
+		return "", fmt.Errorf("failed to initialize malgo context: %v", err)
 	}
 	defer func() {
 		_ = ctx.Uninit()
@@ -593,28 +668,123 @@ func listAudioDevices() error {
 	// 再生デバイス（ループバックに使用可能）の取得
 	infos, err := ctx.Devices(malgo.Playback)
 	if err != nil {
-		return fmt.Errorf("failed to get playback devices: %v", err)
+		return "", fmt.Errorf("failed to get playback devices: %v", err)
 	}
 
-	fmt.Println("\n=== Available Audio Devices (Playback) ===")
-	fmt.Println("These devices can be used for loopback capture")
+	if len(infos) == 0 {
+		return "", fmt.Errorf("no playback devices found")
+	}
+
+	// デバイス一覧を表示
+	fmt.Println("\n=== Select Audio Device ===")
+	fmt.Println("Available audio devices for loopback capture:")
 	fmt.Println()
 
-	if len(infos) == 0 {
-		fmt.Println("No playback devices found.")
-	} else {
-		for i, info := range infos {
-			fmt.Printf("[%d] %s\n", i+1, info.Name())
-			fmt.Printf("    ID: %v\n", info.ID)
-			if info.IsDefault > 0 {
-				fmt.Println("    (Default Device)")
-			}
-			fmt.Println()
+	for i, info := range infos {
+		defaultMark := ""
+		if info.IsDefault > 0 {
+			defaultMark = " (Default)"
+		}
+		fmt.Printf("[%d] %s%s\n", i+1, info.Name(), defaultMark)
+	}
+
+	fmt.Println()
+	fmt.Print("Enter device number: ")
+
+	// ユーザー入力を読み取る
+	reader := bufio.NewReader(os.Stdin)
+	input, err := reader.ReadString('\n')
+	if err != nil {
+		return "", fmt.Errorf("failed to read input: %v", err)
+	}
+
+	// 入力をトリムして数値に変換
+	input = strings.TrimSpace(input)
+	selection, err := strconv.Atoi(input)
+	if err != nil {
+		return "", fmt.Errorf("invalid input: please enter a number")
+	}
+
+	// 選択範囲チェック
+	if selection < 1 || selection > len(infos) {
+		return "", fmt.Errorf("invalid selection: please enter a number between 1 and %d", len(infos))
+	}
+
+	// 選択されたデバイスの名前を返す
+	selectedDevice := infos[selection-1].Name()
+	fmt.Printf("\n✓ Selected: %s\n", selectedDevice)
+
+	// デフォルトとして保存するか確認
+	fmt.Print("\nSave this device as default in config.yaml? (y/n): ")
+	saveInput, err := reader.ReadString('\n')
+	if err != nil {
+		log.Printf("Warning: Failed to read input: %v", err)
+		fmt.Println()
+		return selectedDevice, nil
+	}
+
+	saveInput = strings.TrimSpace(strings.ToLower(saveInput))
+	if saveInput == "y" || saveInput == "yes" {
+		if err := saveDeviceToConfig(selectedDevice); err != nil {
+			log.Printf("Warning: Failed to save device to config: %v", err)
+			fmt.Println("Device selection will be used for this session only.")
+		} else {
+			fmt.Println("✓ Device saved to config.yaml")
 		}
 	}
 
-	fmt.Println("\nTo use a specific device, set 'audio_device_name' in config.yaml")
-	fmt.Println("Example: audio_device_name: \"Speakers (Realtek High Definition Audio)\"")
+	fmt.Println()
+	return selectedDevice, nil
+}
+
+// saveDeviceToConfig saves the selected audio device to config.yaml
+func saveDeviceToConfig(deviceName string) error {
+	// config.yamlを読み込む
+	data, err := os.ReadFile("config.yaml")
+	if err != nil {
+		return fmt.Errorf("failed to read config.yaml: %v", err)
+	}
+
+	lines := strings.Split(string(data), "\n")
+	updated := false
+	inAudioSection := false
+
+	// 既存の audio_device_name を探して更新、またはコメントアウトされている行を置き換え
+	for i, line := range lines {
+		trimmed := strings.TrimSpace(line)
+
+		// オーディオデバイスセクションを検出
+		if strings.Contains(trimmed, "オーディオデバイスの設定") || 
+		   strings.Contains(trimmed, "Audio Device Settings") {
+			inAudioSection = true
+			continue
+		}
+
+		// 別のセクションに入ったらフラグをオフ
+		if inAudioSection && strings.HasPrefix(trimmed, "#") && 
+		   (strings.Contains(trimmed, "デバイス一覧") || strings.Contains(trimmed, "Device List")) {
+			inAudioSection = false
+		}
+
+		// audio_device_name の行を見つけた場合
+		if strings.HasPrefix(trimmed, "audio_device_name:") || 
+		   strings.HasPrefix(trimmed, "# audio_device_name:") {
+			lines[i] = fmt.Sprintf("audio_device_name: \"%s\"", deviceName)
+			updated = true
+			break
+		}
+	}
+
+	// audio_device_name が見つからなかった場合は、ファイルの最後に追加
+	if !updated {
+		lines = append(lines, fmt.Sprintf("audio_device_name: \"%s\"", deviceName))
+	}
+
+	// ファイルに書き込む
+	output := strings.Join(lines, "\n")
+	if err := os.WriteFile("config.yaml", []byte(output), 0644); err != nil {
+		return fmt.Errorf("failed to write config.yaml: %v", err)
+	}
 
 	return nil
 }
@@ -634,4 +804,130 @@ func findDeviceByName(ctx *malgo.AllocatedContext, deviceName string) (*malgo.De
 	}
 
 	return nil, fmt.Errorf("device not found: %s", deviceName)
+}
+
+// loadOrCreateConfig loads config.yaml or creates it if it doesn't exist
+func loadOrCreateConfig() (*Config, error) {
+	// config.yamlが存在するか確認
+	if _, err := os.Stat("config.yaml"); os.IsNotExist(err) {
+		// 存在しない場合は、テンプレートから作成
+		log.Println("config.yaml not found. Creating a new one...")
+		if err := createDefaultConfig(); err != nil {
+			return nil, fmt.Errorf("failed to create config.yaml: %v", err)
+		}
+		log.Println("✓ Created config.yaml")
+	}
+
+	// config.yamlを読み込む
+	configFile, err := os.Open("config.yaml")
+	if err != nil {
+		return nil, fmt.Errorf("failed to open config.yaml: %v", err)
+	}
+	defer configFile.Close()
+
+	cfg := &Config{}
+	decoder := yaml.NewDecoder(configFile)
+	if err := decoder.Decode(cfg); err != nil {
+		return nil, fmt.Errorf("failed to parse config.yaml: %v", err)
+	}
+
+	return cfg, nil
+}
+
+// createDefaultConfig creates a default config.yaml file
+func createDefaultConfig() error {
+	defaultConfig := `# ConsoNance Configuration File
+# This file was automatically generated
+
+# Discord Bot Token (REQUIRED)
+# Get your token from https://discord.com/developers/applications
+discord_token: ""
+
+# ===== Optional Settings =====
+# These settings are all optional. You can control the bot via Discord chat commands!
+
+# Auto-connect Settings (Optional)
+# If you want the bot to automatically join a voice channel on startup, 
+# uncomment and fill in these values:
+# guild_id: "YOUR_GUILD_ID_HERE"
+# channel_id: "YOUR_CHANNEL_ID_HERE"
+
+# To join via Discord chat, simply mention the bot:
+#   @Bot join #channel-name
+#   @Bot leave
+#   @Bot status
+#   @Bot help
+
+# Audio Device Settings (Optional)
+# If not specified, you'll be prompted to select a device from a list at startup
+# To use a specific device, uncomment and set the device name:
+# audio_device_name: "Speakers (Realtek High Definition Audio)"
+`
+
+	if err := os.WriteFile("config.yaml", []byte(defaultConfig), 0644); err != nil {
+		return fmt.Errorf("failed to write config.yaml: %v", err)
+	}
+
+	return nil
+}
+
+// promptForDiscordToken prompts the user to enter their Discord bot token
+func promptForDiscordToken() (string, error) {
+	fmt.Println("\n=== Discord Bot Token Required ===")
+	fmt.Println("Your Discord bot token is not configured.")
+	fmt.Println()
+	fmt.Println("To get your bot token:")
+	fmt.Println("1. Go to https://discord.com/developers/applications")
+	fmt.Println("2. Select your application (or create a new one)")
+	fmt.Println("3. Navigate to the 'Bot' section")
+	fmt.Println("4. Click 'Reset Token' or 'Copy' to get your token")
+	fmt.Println("5. Make sure to enable 'MESSAGE CONTENT INTENT' under Privileged Gateway Intents")
+	fmt.Println()
+	fmt.Print("Paste your Discord bot token here: ")
+
+	reader := bufio.NewReader(os.Stdin)
+	token, err := reader.ReadString('\n')
+	if err != nil {
+		return "", fmt.Errorf("failed to read token: %v", err)
+	}
+
+	token = strings.TrimSpace(token)
+	if token == "" {
+		return "", fmt.Errorf("token cannot be empty")
+	}
+
+	// トークンをconfig.yamlに保存
+	if err := saveTokenToConfig(token); err != nil {
+		return "", fmt.Errorf("failed to save token to config: %v", err)
+	}
+
+	return token, nil
+}
+
+// saveTokenToConfig saves the Discord token to config.yaml
+func saveTokenToConfig(token string) error {
+	// config.yamlを読み込む
+	data, err := os.ReadFile("config.yaml")
+	if err != nil {
+		return fmt.Errorf("failed to read config.yaml: %v", err)
+	}
+
+	lines := strings.Split(string(data), "\n")
+
+	// discord_token の行を探して更新
+	for i, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if strings.HasPrefix(trimmed, "discord_token:") {
+			lines[i] = fmt.Sprintf("discord_token: \"%s\"", token)
+			break
+		}
+	}
+
+	// ファイルに書き込む
+	output := strings.Join(lines, "\n")
+	if err := os.WriteFile("config.yaml", []byte(output), 0644); err != nil {
+		return fmt.Errorf("failed to write config.yaml: %v", err)
+	}
+
+	return nil
 }

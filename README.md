@@ -106,20 +106,71 @@ make build-mac
 
 ## Configuration
 
-Copy `config.yaml.example` to `config.yaml` and edit it with your values:
+### Easy First-Time Setup
+
+**No manual configuration required!** Just run the bot:
+
+```bash
+./consonance.exe  # or ./consonance on Linux/macOS
+```
+
+On first run, the bot will:
+1. Automatically create `config.yaml` if it doesn't exist
+2. Prompt you to enter your Discord bot token
+3. Save your token to `config.yaml`
+4. Prompt you to select an audio device
+5. Optionally save the device as default
+
+Example first run:
+```
+=== Discord Bot Token Required ===
+Your Discord bot token is not configured.
+
+To get your bot token:
+1. Go to https://discord.com/developers/applications
+2. Select your application (or create a new one)
+3. Navigate to the 'Bot' section
+4. Click 'Reset Token' or 'Copy' to get your token
+5. Make sure to enable 'MESSAGE CONTENT INTENT' under Privileged Gateway Intents
+
+Paste your Discord bot token here: [YOUR_TOKEN]
+✓ Discord token saved to config.yaml
+
+=== Select Audio Device ===
+Available audio devices for loopback capture:
+
+[1] Speakers (Realtek High Definition Audio) (Default)
+[2] Line (Yamaha SYNCROOM Driver)
+
+Enter device number: 2
+✓ Selected: Line (Yamaha SYNCROOM Driver)
+
+Save this device as default in config.yaml? (y/n): y
+✓ Device saved to config.yaml
+```
+
+### Manual Configuration (Optional)
+
+If you prefer to manually configure, copy `config.yaml.example` to `config.yaml`:
 
 ```bash
 cp config.yaml.example config.yaml
 ```
 
-Then edit `config.yaml` with your actual configuration:
+Minimum required configuration:
 
 ```yaml
 discord_token: "YOUR_BOT_TOKEN_HERE"
-channel_id: "1234567890"  # Optional: Auto-join this channel on startup
+```
+
+### Optional Auto-Connect Settings
+
+To automatically join a voice channel on startup:
+
+```yaml
+discord_token: "YOUR_BOT_TOKEN_HERE"
 guild_id: "0987654321"    # Your Discord server (guild) ID
-audio_device_name: "Your Audio Device Name"  # Optional: Specify audio device
-list_devices: false       # Set to true to list available audio devices
+channel_id: "1234567890"  # Voice channel to auto-join
 ```
 
 ### Getting Your Discord Bot Token
@@ -128,37 +179,81 @@ list_devices: false       # Set to true to list available audio devices
 2. Create a new application or select an existing one
 3. Navigate to the "Bot" section
 4. Click "Reset Token" and copy your bot token
-5. Paste it into `config.yaml` as `discord_token`
 
-### Finding Guild and Channel IDs
+### Important: Enable Privileged Gateway Intents
 
-1. Enable Developer Mode in Discord: Settings > Advanced > Developer Mode
-2. Right-click on your server icon → Copy Server ID (this is your `guild_id`)
-3. Right-click on a voice channel → Copy Channel ID (this is your `channel_id`)
+⚠️ **This step is required or you'll get authentication errors!**
 
-### Audio Device Configuration
+1. In the Discord Developer Portal, go to your application
+2. Navigate to the **"Bot"** section
+3. Scroll down to **"Privileged Gateway Intents"**
+4. Enable the following intents:
+   - ✅ **MESSAGE CONTENT INTENT** (required for commands)
+   - ✅ **SERVER MEMBERS INTENT** (recommended)
+   - ✅ **PRESENCE INTENT** (recommended)
+5. Click **"Save Changes"**
 
-To list available audio devices:
-
-```yaml
-list_devices: true
+Without these intents enabled, you'll see an error like:
+```
+websocket: close 4004: Authentication failed.
 ```
 
-Then run the bot to see available devices. Copy the device name you want to use and set it in `audio_device_name`.
+### Audio Device Selection
+
+The bot supports two ways to select an audio device:
+
+1. **Interactive Selection (Recommended)**: Leave `audio_device_name` empty or commented out in `config.yaml`. When you start the bot:
+   - You'll see a numbered list of available devices
+   - Enter the device number to select it
+   - Optionally save your selection to `config.yaml` for future use
+
+   ```
+   === Select Audio Device ===
+   Available audio devices for loopback capture:
+   
+   [1] Speakers (Realtek High Definition Audio) (Default)
+   [2] Line (Yamaha SYNCROOM Driver)
+   [3] Headphones (USB Audio)
+   
+   Enter device number: 2
+   ✓ Selected: Line (Yamaha SYNCROOM Driver)
+   
+   Save this device as default in config.yaml? (y/n): y
+   ✓ Device saved to config.yaml
+   ```
+
+2. **Pre-configured Device**: Set `audio_device_name` in `config.yaml` to use a specific device automatically:
+   ```yaml
+   audio_device_name: "Line (Yamaha SYNCROOM Driver)"
+   ```
 
 ## Usage
 
 ### Starting the Bot
 
+Simply run the executable:
+
 ```bash
-./consonance  # or consonance.exe on Windows
+./consonance.exe  # on Windows
+./consonance      # on Linux/macOS
 ```
 
-The bot will start and connect to Discord. If `channel_id` is specified in `config.yaml`, it will automatically join that voice channel.
+**First-time users**: The bot will guide you through:
+1. Creating `config.yaml` (if it doesn't exist)
+2. Entering your Discord bot token
+3. Selecting an audio device
+
+**Subsequent runs**: The bot will use your saved configuration and start immediately.
+
+The bot will connect to Discord. You can then:
+- Use Discord chat commands to join/leave voice channels (see below)
+- Or, if `guild_id` and `channel_id` are set in `config.yaml`, it will auto-join that channel
 
 ### Discord Commands
 
-You can control the bot by mentioning it in any text channel on your Discord server:
+You can control the bot by mentioning it in any text channel on your Discord server.
+
+**No configuration required!** Just mention the bot with commands:
 
 #### Join a Voice Channel
 
