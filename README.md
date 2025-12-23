@@ -302,6 +302,35 @@ Shows available commands.
 - Required bot permissions: `Connect`, `Speak`, `Read Messages`, `Send Messages`
 - The bot uses loopback audio capture to stream system audio
 
+## Development
+
+### Version Management
+
+ConsoNance uses a simple version management system with the format `YY.MM.minor` (e.g., `25.12.1`):
+
+- **YY**: Year (2-digit)
+- **MM**: Month (2-digit)
+- **minor**: Minor version number within the month
+
+To update the version:
+
+1. Edit the `Version` constant in `version.go`:
+   ```go
+   const Version = "25.12.2"  // Update this value
+   ```
+
+2. The version will be displayed:
+   - On application startup (in logs and console)
+   - In the `@Bot help` command response
+
+### Build Tags
+
+The project includes several build targets in the `Makefile`:
+
+- `make build-win`: Build for Windows (PowerShell)
+- `make build-linux`: Build for Linux
+- `make build-mac`: Build for macOS
+
 ## License
 
 This project is licensed under the GNU General Public License v3.0 - see the [LICENSE](LICENSE) file for details.

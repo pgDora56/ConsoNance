@@ -89,6 +89,12 @@ func setupLogFile() (*os.File, error) {
 }
 
 func main() {
+	// バージョン情報を表示
+	fmt.Println("==========================================")
+	fmt.Printf("  %s\n", GetVersionString())
+	fmt.Println("==========================================")
+	fmt.Println()
+
 	// ログファイルのセットアップ
 	logFile, err := setupLogFile()
 	if err != nil {
@@ -103,20 +109,21 @@ func main() {
 		if r := recover(); r != nil {
 			log.Printf("PANIC: %v", r)
 			log.Println("Application terminated abnormally")
+			waitForEnter()
 		}
 	}()
 
 	// config.yamlの読み込み（存在しない場合は作成）
 	config, err = loadOrCreateConfig()
 	if err != nil {
-		log.Fatalf("Failed to load config: %v", err)
+		exitWithError("Failed to load config: %v", err)
 	}
 
 	// トークンの検証と対話的入力
 	if config.DiscordToken == "" {
 		token, err := promptForDiscordToken()
 		if err != nil {
-			log.Fatalf("Failed to get Discord token: %v", err)
+			exitWithError("Failed to get Discord token: %v", err)
 		}
 		config.DiscordToken = token
 		log.Println("✓ Discord token saved to config.yaml")
@@ -134,7 +141,7 @@ func main() {
 		// 設定ファイルに指定がない場合は、対話的に選択
 		device, err := selectAudioDevice()
 		if err != nil {
-			log.Fatalf("Failed to select audio device: %v", err)
+			exitWithError("Failed to select audio device: %v", err)
 		}
 		selectedDevice = device
 		log.Printf("Selected audio device: %s", selectedDevice)
@@ -152,7 +159,7 @@ func main() {
 	// Discordセッションの作成
 	session, err = discordgo.New("Bot " + config.DiscordToken)
 	if err != nil {
-		log.Fatalf("Failed to create Discord session: %v", err)
+		exitWithError("Failed to create Discord session: %v", err)
 	}
 
 	// Intentの設定
@@ -177,9 +184,24 @@ func main() {
 		log.Println("   - PRESENCE INTENT")
 		log.Println("5. Save changes and try again")
 		log.Println("6. If still failing, try resetting your bot token")
-		log.Fatalf("")
+		log.Println("")
+		waitForEnter()
+		os.Exit(1)
 	}
 	defer session.Close()
+
+	// Bot招待リンクを生成して表示
+	if session.State.User != nil {
+		clientID := session.State.User.ID
+		// 必要な権限: Connect (1048576) + Speak (2097152) + View Channels (1024) + Send Messages (2048) + Read Message History (65536) = 3215376
+		inviteURL := fmt.Sprintf("https://discord.com/api/oauth2/authorize?client_id=%s&scope=bot&permissions=3215376", clientID)
+		fmt.Println("")
+		fmt.Println("==========================================")
+		fmt.Println("  Bot Invite Link:")
+		fmt.Printf("  %s\n", inviteURL)
+		fmt.Println("==========================================")
+		fmt.Println("")
+	}
 
 	log.Println("Bot is now running. Mention me with commands!")
 	log.Println("Commands: @Bot join #channel-name, @Bot leave, @Bot status, @Bot help")
@@ -364,7 +386,7 @@ func handleStatusCommand(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 // handleHelpCommand handles the help command
 func handleHelpCommand(s *discordgo.Session, m *discordgo.MessageCreate) {
-	helpText := "**ConsoNance Bot - Commands**\n\n" +
+	helpText := fmt.Sprintf("**%s - Commands**\n\n", GetVersionString()) +
 		"`@Bot join #チャンネル名` - 指定したボイスチャンネルに接続します\n" +
 		"`@Bot join チャンネル名` - チャンネル名で検索して接続します\n" +
 		"`@Bot leave` - 現在のボイスチャンネルから退出します\n" +
@@ -569,6 +591,11 @@ func streamSystemAudio(v *discordgo.VoiceConnection, deviceName string) error {
 	deviceConfig.Capture.Channels = uint32(channels)
 	deviceConfig.SampleRate = uint32(sampleRate)
 	deviceConfig.Alsa.NoMMap = 1
+	
+	// 低遅延設定：バッファサイズを小さくする
+	// frameSize (960 samples = 20ms) と同じサイズに設定
+	deviceConfig.PeriodSizeInFrames = uint32(frameSize)
+	deviceConfig.Periods = 2 // バッファの数を最小限に
 
 	// デバイス名が指定されている場合、そのデバイスを探す
 	if deviceName != "" {
@@ -804,6 +831,21 @@ func findDeviceByName(ctx *malgo.AllocatedContext, deviceName string) (*malgo.De
 	}
 
 	return nil, fmt.Errorf("device not found: %s", deviceName)
+}
+
+// waitForEnter waits for the user to press Enter before exiting
+func waitForEnter() {
+	fmt.Println("")
+	fmt.Print("Press Enter to exit...")
+	reader := bufio.NewReader(os.Stdin)
+	reader.ReadString('\n')
+}
+
+// exitWithError logs an error message and waits for Enter before exiting
+func exitWithError(format string, args ...interface{}) {
+	log.Printf(format, args...)
+	waitForEnter()
+	os.Exit(1)
 }
 
 // loadOrCreateConfig loads config.yaml or creates it if it doesn't exist

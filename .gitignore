@@ -34,5 +34,8 @@ Thumbs.db
 *.log
 logs/
 
+# Old release files
+release/
+
 # Development logs
 DEVELOPMENT_LOG.md
