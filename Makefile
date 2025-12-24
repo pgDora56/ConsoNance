@@ -26,4 +26,4 @@ build-mac-intel:
 
 # Deploy the documentation
 deploy-docs:
-	scp -r docs/ nance:/deploy/consonance/
+	rsync -avz --delete docs/ nance:/deploy/consonance/docs/
