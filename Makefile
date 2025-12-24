@@ -16,14 +16,14 @@ run: build
 build-win:
 	powershell -Command "$$env:PATH += ';C:\msys64\mingw64\bin'; $$env:CGO_ENABLED=1; go build -o consonance-win.exe"
 
-# Build for Windows (cross-compile)
-build-windows:
-	GOOS=windows GOARCH=amd64 go build -o $(BINARY_NAME)-windows-amd64.exe main.go
+# Build for Mac ARM (Apple Silicon)
+build-mac-arm:
+	go build -o $(BINARY_NAME)-mac-arm main.go
 
-# Build for Linux
-build-linux:
-	GOOS=linux GOARCH=amd64 go build -o $(BINARY_NAME)-linux-amd64 main.go
+# Build for Mac Intel (x86_64)
+build-mac-intel:
+	go build -o $(BINARY_NAME)-mac-intel main.go
 
-# Build for Mac
-build-mac:
-	GOOS=darwin GOARCH=amd64 go build -o $(BINARY_NAME)-darwin-amd64 main.go
+# Deploy the documentation
+deploy-docs:
+	scp -r docs/ nance:/deploy/consonance/
