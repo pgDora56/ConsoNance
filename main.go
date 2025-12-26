@@ -595,7 +595,7 @@ func streamSystemAudio(v *discordgo.VoiceConnection, deviceName string) error {
 	// 低遅延設定：バッファサイズを小さくする
 	// frameSize (960 samples = 20ms) と同じサイズに設定
 	deviceConfig.PeriodSizeInFrames = uint32(frameSize)
-	deviceConfig.Periods = 2 // バッファの数を最小限に
+	deviceConfig.Periods = 4 // バッファの数（2→4に増やして安定性向上）
 
 	// デバイス名が指定されている場合、そのデバイスを探す
 	if deviceName != "" {
