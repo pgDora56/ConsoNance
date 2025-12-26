@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>ConsoNance 導入ドキュメント</title>
+    <meta
+      name="description"
+      content="ConsoNance（Discord向けステレオ音声配信ツール）の導入ドキュメント。新規導入と移行を分けて、画像つきで案内します。"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <header>
+        <h1 class="title">ConsoNance 導入ドキュメント</h1>
+        <p class="subtitle">
+          PC音をDiscordの通話に<strong>ステレオ</strong>で載せるためのツール <code>ConsoNance</code> のセットアップ手順です。
+          新規導入/移行を分け、画像を交えながら詳しく説明します。
+        </p>
+        <p class="subtitle">本ドキュメントは作成途中です。画像などが一部古かったりすることがありますが、その点は温かい目でご覧ください。随時更新していきます。</p>
+      </header>
+
+      <section class="support" aria-label="ご支援のお願い">
+        <h2>おねがい（pixivFANBOX）</h2>
+        <p>今回の開発やAzureサーバーの運営に必要な費用を以下のpixivFANBOXで募っています。</p>
+        <p>
+          <a class="cta" href="https://dora417.fanbox.cc" target="_blank" rel="noopener">https://dora417.fanbox.cc</a>
+        </p>
+        <p>
+          多分これまで支援してくださっていた方のクレカの設定が切れちゃったとかというのもあるかなと思うんですが、ゆるやかに支援者が減っており、
+          <strong>経済的にピンチなサービスになってきております。</strong>
+        </p>
+        <p>
+          ご余裕がありましたら、100円からでもご支援いただけると幸いです＆「継続してるよ！！」という方、ぜひクレカの設定などが切れていないかご確認お願いします🙇
+        </p>
+      </section>
+
+      <nav class="nav" aria-label="サイト内ナビゲーション">
+        <a href="index.html" aria-current="page">トップ</a>
+        <a href="setup.html">新規導入</a>
+        <a href="migrate.html">移行</a>
+      </nav>
+
+      <section class="panel" aria-label="どれを見ればいい？">
+        <h2>どれを見ればいい？</h2>
+        <div class="grid">
+          <div class="thumb">
+            <h3>はじめて使う（新規導入）</h3>
+            <p>Discord Bot作成〜Token取得〜Intents設定〜招待〜初回起動まで、画像つきで案内します。</p>
+            <p><a href="setup.html">新規導入ガイドへ →</a></p>
+          </div>
+          <div class="thumb">
+            <h3>Discord Audio Stream Botから移行</h3>
+            <p>Token流用・初回起動・コマンドの違い・失敗時の直し方まで、移行手順を画像つきで案内します。</p>
+            <p><a href="migrate.html">移行ガイドへ →</a></p>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" aria-label="クイックスタート">
+        <h2>クイックスタート（最短）</h2>
+        <ol>
+          <li>Discord Developer PortalでBotを作成し、Tokenを取得する</li>
+          <li><code>MESSAGE CONTENT INTENT</code> をONにする</li>
+          <li>ConsoNanceをダウンロードして起動し、Tokenと音声デバイスを選ぶ</li>
+          <li>Discordのテキストチャンネルで <code>@Bot join #ボイスチャンネル名</code></li>
+        </ol>
+        <p class="subtitle">※ 詳細は「新規導入ガイド」を参照してください。</p>
+      </section>
+
+      <section class="panel" aria-label="注意と協力のお願い">
+        <h2>注意と協力のお願い</h2>
+        <ul>
+          <li>
+            <strong>OSについて</strong>: ConsoNanceはOSを問わず利用できることを目指していますが、現在このドキュメントは<strong>Windows版の説明が中心</strong>です。
+          </li>
+          <li>
+            <strong>macユーザーの方へ</strong>: macでの動作テスト・ドキュメント用の画像作成に協力してくれる方を募集しています。
+          </li>
+          <li>
+            <strong>不具合の報告</strong>: まだ利用実績が多くないシステムです。もしバグっぽい挙動を見つけたら、<a href="https://x.com/417DR">Dora</a>までお気軽にご連絡ください。
+          </li>
+        </ul>
+      </section>
+
+      <footer></footer>
+    </main>
+  </body>
+</html>
+
+

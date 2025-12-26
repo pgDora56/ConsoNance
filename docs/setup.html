@@ -1,0 +1,296 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>ConsoNance 新規導入ガイド</title>
+    <meta name="description" content="ConsoNanceの新規導入ガイド。Discord Bot作成から初回起動まで、画像付きで詳しく説明します。" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <header>
+        <h1 class="title">新規導入ガイド <span class="subtitle">（はじめて使う方向け）</span></h1>
+        <p class="subtitle">
+          ここでは <code>ConsoNance</code> を初めて使う方向けに、必要なもの→Discord Bot作成→招待→初回起動までを、画像に合わせて詳しく説明します。
+        </p>
+        <p class="subtitle">本ドキュメントは作成途中です。画像などが一部古かったりすることがありますが、その点は温かい目でご覧ください。随時更新していきます。</p>
+      </header>
+
+      <section class="support" aria-label="ご支援のお願い">
+        <h2>おねがい（pixivFANBOX）</h2>
+        <p>今回の開発やAzureサーバーの運営に必要な費用を以下のpixivFANBOXで募っています。</p>
+        <p>
+          <a class="cta" href="https://dora417.fanbox.cc" target="_blank" rel="noopener">https://dora417.fanbox.cc</a>
+        </p>
+        <p>
+          多分これまで支援してくださっていた方のクレカの設定が切れちゃったとかというのもあるかなと思うんですが、ゆるやかに支援者が減っており、
+          <strong>経済的にピンチなサービスになってきております。</strong>
+        </p>
+        <p>
+          ご余裕がありましたら、100円からでもご支援いただけると幸いです＆「継続してるよ！！」という方、ぜひクレカの設定などが切れていないかご確認お願いします🙇
+        </p>
+      </section>
+
+      <nav class="nav" aria-label="サイト内ナビゲーション">
+        <a href="index.html">トップ</a>
+        <a href="setup.html" aria-current="page">新規導入</a>
+        <a href="migrate.html">移行</a>
+      </nav>
+
+      <section class="panel" aria-label="必要なもの">
+        <h2>必要なもの</h2>
+        <ul>
+          <li><strong>音源プレイヤー</strong>（出力先を選べるもの。例: foobar2000 / あるいはWindows11の標準機能にソフトウェアの出力先を指定できる機能がありますので、そちらを利用してください）</li>
+          <li><strong>仮想オーディオデバイス</strong>（例: YAMAHA SYNCROOM / NETDUETTO）</li>
+          <ul>
+            <li><a href="https://syncroom.yamaha.com/" target="_blank" rel="noopener">YAMAHA SYNCROOM</a>をインストールすると付いてくるものなどが簡単です</li>
+          </ul>
+          <li><strong>Discord Bot</strong>（Developer Portalで作成）</li>
+          <li><strong>ConsoNance本体</strong>（Releasesからダウンロード）</li>
+        </ul>
+        <div class="callout ok">
+          <strong>ポイント</strong>: ConsoNanceは初回起動時に <strong>Token入力</strong> と <strong>音声デバイス選択</strong> を案内します。以降はDiscord上のメンションコマンドで操作できます。
+        </div>
+      </section>
+
+      <section class="panel" aria-label="Discord Botの作成">
+        <h2>1. Discord Botの作成（Developer Portal）</h2>
+        <p>
+          Discord Botの作成と設定は <a href="https://discord.com/developers/applications" target="_blank" rel="noopener">Discord Developer Portal</a> で行います。
+        </p>
+
+        <h3>1-1. New Applicationを作る</h3>
+        <p>Developer Portalの「Applications」画面で <strong>New Application</strong> を押します。</p>
+        <figure>
+          <img src="assets/blog/02_20210214033503.png" alt="Discord Developer PortalのApplications画面（New Applicationボタン）" />
+          <figcaption>Developer Portal: Applications（New Application）</figcaption>
+        </figure>
+        <p class="subtitle">※ UI表記はDiscord側の更新により多少変わることがあります。</p>
+
+        <h3>1-2. General Informationで名前・アイコンを設定する</h3>
+        <p>Bot名やアイコンはここで設定できます（後から変更も可能です）。</p>
+        <figure>
+          <img src="assets/blog/03_20210214034354.png" alt="General Information画面（アプリ名やアイコン設定）" />
+          <figcaption>General Information（名前・アイコンなど）</figcaption>
+        </figure>
+
+        <h3>1-3. Botを追加する</h3>
+        <p>左メニューの <strong>Bot</strong> へ移動し、<strong>Add Bot</strong> を押します。</p>
+        <figure>
+          <img src="assets/blog/04_20210214034508.png" alt="Bot画面（Add Bot）" />
+          <figcaption>Bot（Add Bot）</figcaption>
+        </figure>
+
+        <h3>1-4. Tokenを取得する（重要）</h3>
+        <p>
+          <strong>Tokenはパスワード相当</strong>です。外部に漏れるとBotが乗っ取られてしまいますので、取り扱いには注意してください。
+          Bot画面のToken欄から <strong>Copy</strong> を押してTokenを取得します。
+        </p>
+        <figure>
+          <img src="assets/blog/05_20210214034629.png" alt="Bot画面（TokenのCopy）" />
+          <figcaption>Bot Tokenの取得（Copy）</figcaption>
+        </figure>
+
+        <h3>1-5. Privileged Gateway Intentsを設定する（重要）</h3>
+        <p>
+          Discord Developer Portalで <code>Message Content Intent</code> をONにします（コマンド受付に必要）。
+          必要に応じて <code>Server Members Intent</code> などもONにします。
+        </p>
+        <p>
+          <a href="https://discord.com/developers/applications" target="_blank" rel="noopener">https://discord.com/developers/applications</a>
+        </p>
+        <figure>
+          <img src="assets/SktTi6LQZe.png" alt="Discord Developer PortalのIntents設定画面" />
+          <figcaption>IntentsをONにする場所</figcaption>
+        </figure>
+        <details>
+          <summary>「4004: Authentication failed」が出るとき</summary>
+          <div>
+            <ul>
+              <li>Tokenが正しいか（余計な空白が入っていないか）確認します</li>
+              <li>Developer Portalで <code>MESSAGE CONTENT INTENT</code> がONになっているか確認します</li>
+              <li>解決しない場合はTokenを再発行し、ConsoNance側に入力し直してください（古いTokenは無効になります）</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <section class="panel" aria-label="Botをサーバーに招待する">
+        <h2>2. Botをサーバーに招待する</h2>
+        <p>Botを使いたいDiscordサーバーへ追加します（招待できる権限が必要です）。</p>
+
+        <h3>2-1. OAuth2から招待URLを作る</h3>
+        <ol>
+          <li>Discord Developer Portalで、左メニューから <strong>OAuth2</strong> を開きます。</li>
+          <li><strong>Scopes</strong> の中にある <code>bot</code> にチェックを入れます。</li>
+        </ol>
+        <figure>
+          <img src="assets/add-bot-01.png" alt="Discord Developer PortalでOAuth2を選び、Scopesのbotにチェックを入れる" />
+          <figcaption>OAuth2 → Scopesで <code>bot</code> を選択</figcaption>
+        </figure>
+
+        <h3>2-2. URLをコピーして招待画面を開く</h3>
+        <ol>
+          <li>そのまま下へスクロールします。</li>
+          <li>表示される招待用URL（ボタン/テキスト）を <strong>コピー</strong> します。</li>
+          <li>ブラウザの新しいタブでそのURLを開きます。</li>
+        </ol>
+        <figure>
+          <img src="assets/add-bot-02.png" alt="OAuth2画面を下にスクロールして招待URLをコピーする" />
+          <figcaption>下へスクロール → 招待URLをコピー</figcaption>
+        </figure>
+
+        <h3>2-3. 追加するサーバーを選んで認証する</h3>
+        <p>招待URLを開くと、サーバー選択と認証画面が表示されます。</p>
+        <figure>
+          <img src="assets/blog/09_20210214041054.png" alt="DiscordのBot招待（認証）画面" />
+          <figcaption>サーバーを選択 → 認証</figcaption>
+        </figure>
+
+        <details>
+          <summary>（任意）Permissionsはどうすればいい？</summary>
+          <div>
+            <p>ConsoNanceで困りにくい最低限の権限は、だいたい次の通りです。</p>
+            <ul>
+              <li><strong>Connect</strong>（ボイスチャンネル接続）</li>
+              <li><strong>Speak</strong>（発話）</li>
+              <li><strong>Read Messages</strong> / <strong>Send Messages</strong>（メンションコマンドの受信/返信）</li>
+            </ul>
+            <p class="subtitle">※ サーバーの運用方針に合わせて、必要最小限になるよう調整してください。</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>招待できるサーバーが一覧に出てこない</summary>
+          <div>
+            <p>あなたがそのサーバーで「Botを追加できる権限」を持っていない可能性があります。サーバー管理者に2-2で作成したURLを送って、招待を依頼してください。</p>
+          </div>
+        </details>
+      </section>
+
+      <section class="panel" aria-label="ConsoNanceを入手して起動する">
+        <h2>3. ConsoNanceを入手して起動する</h2>
+        <h3>3-1. ダウンロード</h3>
+        <p>
+          Releasesから最新のzipをダウンロードします:
+          <a href="https://github.com/pgDora56/ConsoNance/releases" target="_blank" rel="noopener">https://github.com/pgDora56/ConsoNance/releases</a>
+        </p>
+        <figure>
+          <img src="assets/github-download.png" alt="GitHub ReleasesでConsoNanceのzipをダウンロードする画面" />
+          <figcaption>最新の `Consonance-xxxxx.zip` をダウンロードしてください（後ろにmacとついていないものがWindows版です）</figcaption>
+        </figure>
+        <p>
+          zipを展開し、できれば<strong>専用フォルダ</strong>に置いて起動してください（設定ファイルやログが同じフォルダに生成されます）。
+        </p>
+        <ul>
+          <li>Windowsの例だと <code>consonance-win.exe</code> のような実行ファイルが入っています</li>
+          <li>設定をやり直したいときは、同じフォルダの <code>config.yaml</code> を削除すると初期状態に戻せます</li>
+        </ul>
+
+        <h3>3-2. 初回起動（Token入力→音声デバイス選択）</h3>
+        <ol>
+          <li>初回起動時、<code>config.yaml</code> が自動生成されます</li>
+          <li>画面の指示に従って、先ほどコピーしたBot Tokenを貼り付けます</li>
+          <li>音声デバイス一覧が出るので「Discordに流したい音が出ているデバイス」を選びます</li>
+          <li>必要ならデバイスをデフォルトとして保存します（y/n）</li>
+        </ol>
+        <details>
+          <summary>（はじめて向け）「(y/n)」ってなに？</summary>
+          <div>
+            <p><code>(y/n)</code> は「はい / いいえ」を聞かれています。</p>
+            <ul>
+              <li><strong>y</strong>: はい（Yes）</li>
+              <li><strong>n</strong>: いいえ（No）</li>
+            </ul>
+            <p>どちらか1文字を入力して、最後に<strong>Enter</strong>（改行）を押します。</p>
+          </div>
+        </details>
+        <figure>
+          <img src="assets/B1g1WRSmWx.jpg" alt="ConsoNance初回起動時のコンソール画面" />
+          <figcaption>起動すると黒い画面が表示されます</figcaption>
+        </figure>
+        <details>
+          <summary>Windowsで「WindowsによってPCが保護されました」と出る</summary>
+          <div>
+            <p>「実行」を押して進めてください（初回だけ出ることがあります）。</p>
+            <p>
+              <a
+                href="https://www.fmworld.net/cs/azbyclub/qanavi/jsp/qacontents.jsp?PID=0209-8188"
+                target="_blank"
+                rel="noopener"
+                >https://www.fmworld.net/cs/azbyclub/qanavi/jsp/qacontents.jsp?PID=0209-8188</a>
+            </p>
+          </div>
+        </details>
+        <figure>
+          <img src="assets/ByQkWCBXbl.jpg" alt="音声デバイス一覧の選択画面" />
+          <figcaption>音声デバイス選択（番号を入力してEnter）</figcaption>
+        </figure>
+        <figure>
+          <img src="assets/ryv1WAB7Wl.jpg" alt="デフォルト保存確認の画面" />
+          <figcaption>デフォルト保存確認（y/n）</figcaption>
+        </figure>
+        <div class="callout warn">
+          <strong>困ったら初期化</strong>: うまくいかないときは実行ファイルと同じフォルダの <code>config.yaml</code> を削除すると初期状態に戻せます。
+        </div>
+        <figure>
+          <img src="assets/rJePJWRrQ-l.jpg" alt="起動成功メッセージの例" />
+          <figcaption>起動できたらこのようなメッセージが表示されます</figcaption>
+        </figure>
+
+        <h3>3-3. よくある失敗と直し方</h3>
+        <p>一番多いのはTokenが間違っている（コピペが途中で切れている/余計な空白が入っている等）ケースです。</p>
+        <figure>
+          <img src="assets/SkDkbRB7-x.jpg" alt="Tokenが間違っているときの失敗例" />
+          <figcaption>Tokenが間違っている例</figcaption>
+        </figure>
+        <p>この状態で起動し続けると、毎回エラーが出続けることがあります。</p>
+        <figure>
+          <img src="assets/S1ePyWABX-e.jpg" alt="起動するたびにエラーが続く例" />
+          <figcaption>エラーが出続ける例</figcaption>
+        </figure>
+        <div class="callout ok">
+          <strong>直し方</strong>: 実行ファイルと同じフォルダの <code>config.yaml</code> を削除し、起動し直してToken入力からやり直します。
+        </div>
+
+        <h3>3-4. 2回目以降の起動</h3>
+        <p>2回目以降は実行ファイルを起動するだけで、すぐに利用できます。</p>
+        <figure>
+          <img src="assets/HJP1bRrmZx.jpg" alt="2回目以降の起動画面" />
+          <figcaption>2回目以降はスムーズ</figcaption>
+        </figure>
+      </section>
+
+      <section class="panel" aria-label="Discordでの操作">
+        <h2>4. Discordでの操作（メンションコマンド）</h2>
+        <p>Botをボイスチャンネルに参加させる/退出させる/状態を見る操作は、テキストチャンネルでBotにメンションして行います。</p>
+        <pre><code>@Bot join #ボイスチャンネル名
+@Bot leave
+@Bot status
+@Bot help</code></pre>
+        <ul>
+          <li><code>/join</code> のようなスラッシュコマンドではありません</li>
+          <li><code>#</code> の後には<strong>ボイスチャンネル</strong>名を入れてください（テキストチャンネルが候補に出がちです）</li>
+        </ul>
+        <figure>
+          <img src="assets/HJMow0SmZx.png" alt="@Bot join の入力例" />
+          <figcaption><code>@Bot join #ボイスチャンネル名</code> の例</figcaption>
+        </figure>
+      </section>
+
+      <section class="panel" aria-label="完了！">
+        <h2>5. 完了！</h2>
+        <p>これでConsoNanceの新規導入は完了です。各プレーヤーから指定したサウンドデバイスに音声を流すと、Discordのボイスチャンネルにその音がステレオで流れるはずです。お疲れ様でした。
+        </p>
+      </section>
+
+      <footer>
+        <div class="fineprint"></div>
+      </footer>
+    </main>
+  </body>
+</html>
+
+

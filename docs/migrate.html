@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>ConsoNance 移行ガイド（Discord Audio Stream Bot→ConsoNance）</title>
+    <meta
+      name="description"
+      content="Discord Audio Stream BotからConsoNanceへ移行する手順。Token流用、初回起動、コマンドの違い、トラブルシュートを画像付きで説明します。"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="wrap">
+      <header>
+        <h1 class="title">移行ガイド <span class="subtitle">（Discord Audio Stream Bot → ConsoNance）</span></h1>
+        <p class="subtitle">
+          Discord Audio Stream Botを使っていた方向けに、ConsoNanceへ移行する手順をまとめています。基本的には<strong>Tokenを流用</strong>し、初回起動の案内に従うだけです。
+        </p>
+        <p class="subtitle">本ドキュメントは作成途中です。画像などが一部古かったりすることがありますが、その点は温かい目でご覧ください。随時更新していきます。</p>
+      </header>
+
+      <section class="support" aria-label="ご支援のお願い">
+        <h2>おねがい（pixivFANBOX）</h2>
+        <p>今回の開発やAzureサーバーの運営に必要な費用を以下のpixivFANBOXで募っています。</p>
+        <p>
+          <a class="cta" href="https://dora417.fanbox.cc" target="_blank" rel="noopener">https://dora417.fanbox.cc</a>
+        </p>
+        <p>
+          多分これまで支援してくださっていた方のクレカの設定が切れちゃったとかというのもあるかなと思うんですが、ゆるやかに支援者が減っており、
+          <strong>経済的にピンチなサービスになってきております。</strong>
+        </p>
+        <p>
+          ご余裕がありましたら、100円からでもご支援いただけると幸いです＆「継続してるよ！！」という方、ぜひクレカの設定などが切れていないかご確認お願いします🙇
+        </p>
+      </section>
+
+      <nav class="nav" aria-label="サイト内ナビゲーション">
+        <a href="index.html">トップ</a>
+        <a href="setup.html">新規導入</a>
+        <a href="migrate.html" aria-current="page">移行</a>
+      </nav>
+
+      <section class="panel" aria-label="移行の要点">
+        <h2>移行の要点</h2>
+        <div class="callout ok">
+          <strong>重要</strong>: ConsoNanceではDiscord Audio Stream Botのような <code>/join</code> は使いません。
+          テキストチャンネルで <code>@Bot join #ボイスチャンネル名</code> のように<strong>メンションコマンド</strong>で操作します。
+        </div>
+        <ul>
+          <li><strong>Token</strong>: 旧ツールで使っていたBot Tokenをそのまま使えることが多いです</li>
+          <li><strong>初回起動</strong>: Token入力→音声デバイス選択→（必要なら保存）</li>
+          <li><strong>困ったら初期化</strong>: 実行ファイルと同じフォルダの <code>config.yaml</code> を削除</li>
+        </ul>
+      </section>
+
+      <section class="panel" aria-label="手順">
+        <h2>手順</h2>
+
+        <h3>1) ConsoNanceをダウンロード</h3>
+        <p>
+          Releasesから最新のzipをダウンロードします:
+          <a href="https://github.com/pgDora56/ConsoNance/releases" target="_blank" rel="noopener">https://github.com/pgDora56/ConsoNance/releases</a>
+        </p>
+        <figure>
+          <img src="assets/github-download.png" alt="GitHub ReleasesでConsoNanceのzipをダウンロードする画面" />
+          <figcaption>最新の `Consonance-xxxxx.zip` をダウンロードしてください（後ろにmacとついていないものがWindows版です）</figcaption>
+        </figure>
+
+        <h3>2) Bot設定の変更（IntentをON）</h3>
+        <p>
+          Discord Developer Portalで <code>Message Content Intent</code> をONにします（コマンド受付に必要）。
+          必要に応じて <code>Server Members Intent</code> などもONにします。
+        </p>
+        <p>
+          <a href="https://discord.com/developers/applications" target="_blank" rel="noopener">https://discord.com/developers/applications</a>
+        </p>
+        <figure>
+          <img src="assets/SktTi6LQZe.png" alt="Discord Developer PortalのIntents設定画面" />
+          <figcaption>IntentsをONにする場所</figcaption>
+        </figure>
+
+        <h3>3) zipを展開して起動</h3>
+        <ol>
+          <li>zipを展開します（Windowsの例だと <code>consonance-win.exe</code>）。</li>
+          <li>設定ファイル/ログが同じフォルダに生成されるため、できれば<strong>専用フォルダ</strong>に置きます。</li>
+          <li>実行します。</li>
+        </ol>
+        <figure>
+          <img src="assets/B1g1WRSmWx.jpg" alt="ConsoNance起動時の黒い画面" />
+          <figcaption>起動すると黒い画面が表示されます</figcaption>
+        </figure>
+
+        <details>
+          <summary>Windowsで「WindowsによってPCが保護されました」と出る</summary>
+          <div>
+            <p>「実行」を押して進めてください（初回だけ出ることがあります）。</p>
+            <p>
+              <a
+                href="https://www.fmworld.net/cs/azbyclub/qanavi/jsp/qacontents.jsp?PID=0209-8188"
+                target="_blank"
+                rel="noopener"
+                >https://www.fmworld.net/cs/azbyclub/qanavi/jsp/qacontents.jsp?PID=0209-8188</a>
+            </p>
+          </div>
+        </details>
+
+        <h3>4) Tokenを入力（流用OK）</h3>
+        <p>
+          出てきた黒い画面の案内に従って、Discord Audio Stream Botで使っていたTokenを貼り付けてEnterを押します。
+        </p>
+
+        <h4>Discord Audio Stream BotからTokenをコピーする</h4>
+
+        使っていたTokenをメモしていないよ！という方も多いかと思います。
+
+        その場合は、一度Discord Audio Stream Botを起動だけして（Botをチャンネルに追加する必要はありません）、以下の箇所を参照してみてください。
+
+        <figure>
+          <img src="assets/HyUYrArX-e.png" alt="Discord Audio Stream Bot側でTokenをコピーする場所" />
+          <figcaption>こちらからコピーできます。</figcaption>
+        </figure>
+        <details>
+          <summary>Tokenがコピーできない / 見つからない</summary>
+          <div>
+            <ul>
+              <li>Discord Audio Stream Botと同じフォルダの <code>config.json</code> を開き、<code>botToken</code> を確認します（左右の <code>&quot;</code> は不要）。</li>
+              <li>それでもダメならDeveloper PortalでTokenを再発行します（既存Tokenは無効になります）。</li>
+            </ul>
+          </div>
+        </details>
+
+        <h3>5) 音声デバイスを選ぶ</h3>
+        <p>
+          Discordに流す音が出るデバイスを選びます（例: <code>ライン（Yamaha SYNCROOM Driver（WDM））</code>）。番号を入力してEnter。
+        </p>
+        <figure>
+          <img src="assets/ByQkWCBXbl.jpg" alt="音声デバイス一覧の選択画面" />
+          <figcaption>音声デバイス選択</figcaption>
+        </figure>
+        <p>続けて「デフォルトにしますか？(y/n)」と聞かれます。普段固定なら <code>y</code> が便利です。</p>
+        <details>
+          <summary>（はじめて向け）「(y/n)」ってなに？</summary>
+          <div>
+            <p><code>(y/n)</code> は「はい / いいえ」を聞かれています。</p>
+            <ul>
+              <li><strong>y</strong>: はい（Yes）</li>
+              <li><strong>n</strong>: いいえ（No）</li>
+            </ul>
+            <p>どちらか1文字を入力して、最後に<strong>Enter</strong>（改行）を押します。</p>
+          </div>
+        </details>
+        <figure>
+          <img src="assets/ryv1WAB7Wl.jpg" alt="デフォルト保存確認の画面" />
+          <figcaption>デフォルト保存確認</figcaption>
+        </figure>
+
+        <h3>6) Discordで呼び出す</h3>
+        <p>テキストチャンネルでBotにメンションし、ボイスチャンネルへ参加させます。</p>
+        <pre><code>@Bot join #ボイスチャンネル名</code></pre>
+        <figure>
+          <img src="assets/HJMow0SmZx.png" alt="@Bot join の実行例" />
+          <figcaption>メンションコマンドで呼び出します</figcaption>
+        </figure>
+        <ul>
+          <li><code>/join</code> は使いません</li>
+          <li><code>#</code> の後には<strong>ボイスチャンネル</strong>名を指定します</li>
+          <ul>
+            <li><code>#</code>は無くてもだいたいいけます</li>
+          </ul>
+        </ul>
+
+        <h3>7) 成功</h3>
+        <figure>
+          <img src="assets/rJePJWRrQ-l.jpg" alt="起動成功メッセージの例" />
+          <figcaption>起動成功</figcaption>
+        </figure>
+      </section>
+
+      <section class="panel" aria-label="失敗例と直し方">
+        <h2>失敗例と直し方</h2>
+
+        <h3>1. Tokenが間違っている</h3>
+        <figure>
+          <img src="assets/SkDkbRB7-x.jpg" alt="Tokenが間違っているときの失敗例" />
+          <figcaption>Tokenが間違っている例</figcaption>
+        </figure>
+        <p>このままだと起動するたびにエラーが出続けることがあります。</p>
+        <figure>
+          <img src="assets/S1ePyWABX-e.jpg" alt="起動するたびにエラーが続く例" />
+          <figcaption>エラーが出続ける例</figcaption>
+        </figure>
+        <div class="callout warn">
+          <strong>対処</strong>: 実行ファイルと同じフォルダの <code>config.yaml</code> を削除し、再起動してToken入力からやり直します。
+        </div>
+
+      </section>
+
+      <section class="panel" aria-label="2回目以降の起動">
+        <h2>2回目以降の起動</h2>
+        <p>2回目以降は実行ファイルを起動するだけで、すぐ利用できます。</p>
+        <figure>
+          <img src="assets/HJP1bRrmZx.jpg" alt="2回目以降の起動画面" />
+          <figcaption>2回目以降はスムーズ</figcaption>
+        </figure>
+      </section>
+
+      <footer>
+        <div class="fineprint"></div>
+      </footer>
+    </main>
+  </body>
+</html>
+
+
