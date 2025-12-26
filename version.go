@@ -4,7 +4,7 @@ import "fmt"
 
 const (
 	// Version is the current version of ConsoNance
-	Version = "25.12.2"
+	Version = "25.12.3b"
 	
 	// AppName is the application name
 	AppName = "ConsoNance"

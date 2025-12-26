@@ -25,3 +25,8 @@ discord_token: "YOUR_DISCORD_BOT_TOKEN_HERE"
 # To use a specific device, uncomment and set the device name:
 # audio_device_name: "Speakers (Realtek High Definition Audio)"
 
+# Audio Buffer Settings (Optional)
+# Number of audio buffer periods (affects latency and stability)
+# 0 = use default (4), higher values = more stable but more latency
+# Recommended: 3-6 depending on your system performance
+audio_buffer_periods: 0

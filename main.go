@@ -56,10 +56,11 @@ var (
 
 // Config structure
 type Config struct {
-	DiscordToken    string `yaml:"discord_token"`
-	ChannelID       string `yaml:"channel_id"`
-	GuildID         string `yaml:"guild_id"`
-	AudioDeviceName string `yaml:"audio_device_name"`
+	DiscordToken       string `yaml:"discord_token"`
+	ChannelID          string `yaml:"channel_id"`
+	GuildID            string `yaml:"guild_id"`
+	AudioDeviceName    string `yaml:"audio_device_name"`
+	AudioBufferPeriods int    `yaml:"audio_buffer_periods"` // 0 = use default (4)
 }
 
 // setupLogFile creates a log file and configures logging to both file and console
@@ -595,7 +596,14 @@ func streamSystemAudio(v *discordgo.VoiceConnection, deviceName string) error {
 	// 低遅延設定：バッファサイズを小さくする
 	// frameSize (960 samples = 20ms) と同じサイズに設定
 	deviceConfig.PeriodSizeInFrames = uint32(frameSize)
-	deviceConfig.Periods = 4 // バッファの数（2→4に増やして安定性向上）
+	
+	// バッファの数を設定（デフォルト値: 4）
+	bufferPeriods := config.AudioBufferPeriods
+	if bufferPeriods == 0 {
+		bufferPeriods = 4 // デフォルト値
+	}
+	deviceConfig.Periods = uint32(bufferPeriods)
+	log.Printf("Audio buffer periods: %d (latency: ~%dms)", bufferPeriods, bufferPeriods*20)
 
 	// デバイス名が指定されている場合、そのデバイスを探す
 	if deviceName != "" {
@@ -904,6 +912,12 @@ discord_token: ""
 # If not specified, you'll be prompted to select a device from a list at startup
 # To use a specific device, uncomment and set the device name:
 # audio_device_name: "Speakers (Realtek High Definition Audio)"
+
+# Audio Buffer Settings (Optional)
+# Number of audio buffer periods (affects latency and stability)
+# 0 = use default (4), higher values = more stable but more latency
+# Recommended: 3-6 depending on your system performance
+audio_buffer_periods: 0
 `
 
 	if err := os.WriteFile("config.yaml", []byte(defaultConfig), 0644); err != nil {
