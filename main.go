@@ -60,7 +60,7 @@ type Config struct {
 	ChannelID          string `yaml:"channel_id"`
 	GuildID            string `yaml:"guild_id"`
 	AudioDeviceName    string `yaml:"audio_device_name"`
-	AudioBufferPeriods int    `yaml:"audio_buffer_periods"` // 0 = use default (4)
+	AudioBufferPeriods int    `yaml:"audio_buffer_periods"` // 0 = use default
 }
 
 // setupLogFile creates a log file and configures logging to both file and console
@@ -915,7 +915,7 @@ discord_token: ""
 
 # Audio Buffer Settings (Optional)
 # Number of audio buffer periods (affects latency and stability)
-# 0 = use default (4), higher values = more stable but more latency
+# 0 = use default, higher values = more stable but more latency
 # Recommended: 3-6 depending on your system performance
 audio_buffer_periods: 0
 `

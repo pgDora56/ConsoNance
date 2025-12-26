@@ -27,6 +27,6 @@ discord_token: "YOUR_DISCORD_BOT_TOKEN_HERE"
 
 # Audio Buffer Settings (Optional)
 # Number of audio buffer periods (affects latency and stability)
-# 0 = use default (4), higher values = more stable but more latency
+# 0 = use default, higher values = more stable but more latency
 # Recommended: 3-6 depending on your system performance
 audio_buffer_periods: 0
